@@ -7,13 +7,20 @@
 
 # user is already defined
 hostname="$(hostname)"
-os='Manjaro Linux'
+os="$(cat /etc/issue | cut -d ' ' -f 1,2)"
 kernel="$(uname -sr)"
 uptime="$(uptime -p | sed 's/up //')"
 packages="$(pacman -Q | wc -l)"
 shell="$(basename ${SHELL})"
-if [ -z "${WM}" ]; then
-	WM="$(tail -n 1 "${HOME}/.xinitrc" | cut -d ' ' -f 2)"
+if [[ -n "$DISPLAY" ]]; then
+    id="$(xprop -root -notype _NET_SUPPORTING_WM_CHECK)"
+    id="${id##* }"
+    wm="$(xprop -id "$id" -notype -len 100 -f _NET_WM_NAME 8t)"
+    wm="${wm/*_NET_WM_NAME = }"
+    wm="${wm/\"}"
+    wm="${wm/\"*}"
+else
+    wm="TTY"
 fi
 
 ## DEFINE COLORS
@@ -47,6 +54,6 @@ ${fc}  ████      ████  ${lc}KERNEL:    ${ic}${kernel}${rc}
 ${fc}  ████ ████ ████  ${lc}UPTIME:    ${ic}${uptime}${rc}
 ${fc}  ████ ████ ████  ${lc}PACKAGES:  ${ic}${packages}${rc}
 ${fc}  ████ ████ ████  ${lc}SHELL:     ${ic}${shell}${rc}
-${fc}  ████ ████ ████  ${lc}WM:        ${ic}${WM}${rc}
+${fc}  ████ ████ ████  ${lc}WM:        ${ic}${wm}${rc}
 
 EOF
